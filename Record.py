@@ -38,7 +38,6 @@ class Record():
         success_flag = True
         try:
             workbook.save(filename)
-            print("Successfully Recorded! Please check the file.")
         except PermissionError:
             print("Failed to save the workbook. The file is currently open.")
             success_flag = False
@@ -266,7 +265,7 @@ class Record():
 
         date_obj = datetime.strptime(self.current_date, input_format)
         today = date_obj.strftime(output_format)
-        formatted_date = self.current_date
+        save_flag = False
 
         print(today)
 
@@ -274,8 +273,6 @@ class Record():
             after_days = date_obj + timedelta(days = i)
 
             current_date = after_days.strftime(output_format)
-            formatted_date = after_days.strftime(input_format)
-
             isNew = False
 
             if current_date in workbook.sheetnames:
@@ -284,12 +281,14 @@ class Record():
                 print("No")
                 workbook.create_sheet(title = current_date)
                 isNew = True
+                save_flag = True
 
             worksheet = workbook[current_date]
             if isNew:
                 self.formatting_sheet_first_time(worksheet)
 
-        self.save_workbook(filename, workbook)
+        if save_flag:
+            self.save_workbook(filename, workbook)
 
         workbook = load_workbook(filename)
 

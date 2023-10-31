@@ -81,9 +81,9 @@ class Analyzer():
             matches = []
             
             # filter out SABA ...
-            if self.isToday:
-                if "SABA" in league_name:
-                    continue
+            # if self.isToday:
+            if "SABA" in league_name:
+                continue
             
             tr_tag = football_table.tr
             count = 0

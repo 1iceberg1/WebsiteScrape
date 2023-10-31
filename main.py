@@ -78,54 +78,13 @@ def calculate_passed_minutes(time_str):
     
     return total_minutes
 
-def save_workbook(filename, workbook):
-    success_flag = True
-    try:
-        workbook.save(filename)
-        print("Successfully Recorded! Please check the file.")
-    except PermissionError:
-        print("Failed to save the workbook. The file is currently open.")
-        success_flag = False
-    except exceptions.ReadOnlyWorkbookException:
-        print("Failed to save the workbook. The file is opened as read-only.")
-        success_flag = False
-    except Exception as e:
-        print("An error occurred while saving the workbook:", str(e))
-        success_flag = False
-
-    if success_flag == False:
-        print("Please check your file is currently open or opend as read-only")
-
 def ScrapeData():
     
     start_time = time.time()
     
     url = "https://www.m8clicks.com"
     early_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd=&isWC=False&ia=2&tf=-1"
-    # today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&isWC=False&ia=0&isSiteFav=False"
     today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1"
-
-    if not os.path.exists('record.xlsx'):
-        workbook = Workbook()
-        save_workbook('record.xlsx', workbook)
-
-    while check_file_writable("record.xlsx") != True:
-        print("Please close opened Excel file: record.xlsx")
-        time.sleep(5)
-
-    # # specify  the user profile directory
-    # user_profile_directory = 'C:/selenium'
-
-    # # create ChromeOptions object and set the user profile directory
-    # chrome_options = Options()
-    # chrome_options.add_experimental_option("detach", True)
-    # chrome_options.add_argument("user-data-dir=" + user_profile_directory)
-    # chrome_options.add_argument('--profile-directory=selenium')
-    # chrome_options.add_argument('--incognito')
-    # chrome_options.add_argument("--enable-javascript")
-    # chrome_options.add_argument("--enable-file-cookies")
-    # chrome_options.add_experimental_option("excludeSwitches", ['enable-automation'])
-    # driver = webdriver.Chrome(options = chrome_options)
 
     chromeOptions = webdriver.ChromeOptions()
     chromeOptions.add_argument('--headless')
@@ -215,9 +174,10 @@ def ScrapeData():
     analyzer = Analyzer(html, True, current_date)
     leagues = analyzer.get_data()
 
-    record = Record(current_date, passed_minutes)
-    record.set_data(leagues)
-    record.create_file_sheet("record.xlsx")
+    if len(leagues) != 0:
+        record = Record(current_date, passed_minutes)
+        record.set_data(leagues)
+        record.create_file_sheet("record.xlsx")
 
     # Early Recording
 
@@ -246,9 +206,10 @@ def ScrapeData():
     analyzer = Analyzer(html, False, current_date)
     leagues = analyzer.get_data()
 
-    record = Record(current_date, passed_minutes)
-    record.set_data(leagues)
-    record.create_file_sheet("record.xlsx")
+    if len(leagues) != 0:
+        record = Record(current_date, passed_minutes)
+        record.set_data(leagues)
+        record.create_file_sheet("record.xlsx")
 
     print("URL")
     print(driver.current_url)
