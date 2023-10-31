@@ -31,6 +31,12 @@ def check_file_writable(file_path):
         return False  # File does not exist
     return True  # File is not open or read-only
 
+def change_date_format(date_str, day_diff, input_format, output_format):
+    date_obj = datetime.datetime.strptime(date_str, input_format)
+    date_obj = date_obj + datetime.timedelta(days = day_diff)
+    output_date = date_obj.strftime(output_format)
+    return output_date
+
 def get_date_value(page):
     soup = BeautifulSoup(page, 'html.parser')
 
@@ -83,7 +89,8 @@ def ScrapeData():
     start_time = time.time()
     
     url = "https://www.m8clicks.com"
-    early_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd=&isWC=False&ia=2&tf=-1"
+    early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd="
+    early_url2 = "&isWC=False&ia=2&tf=-1"
     today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1"
 
     chromeOptions = webdriver.ChromeOptions()
@@ -181,35 +188,39 @@ def ScrapeData():
 
     # Early Recording
 
-    try:
-        driver.get(early_url)
+    for i in range(5):
+        early_date_format = change_date_format(current_date, i + 1, "%m/%d/%Y", "%Y-%m-%d")
+        early_url = early_url1 + early_date_format + early_url2
 
-        # Add the stored cookies to the WebDriver
-        for name, value in cookie_dict.items():
-            driver.add_cookie({'name': name, 'value': value})
+        try:
+            driver.get(early_url)
 
-        driver.refresh()
+            # Add the stored cookies to the WebDriver
+            for name, value in cookie_dict.items():
+                driver.add_cookie({'name': name, 'value': value})
 
-    except Exception as e:
-        print("Error: " + str(e))
+            driver.refresh()
 
-    # this is just to ensure that the page is loaded 
-    time.sleep(10) 
+        except Exception as e:
+            print("Error: " + str(e))
 
-    html = driver.page_source 
-    # print(html)
-    
-    driver.execute_script("return document.readyState")
+        # this is just to ensure that the page is loaded 
+        time.sleep(10) 
 
-    time.sleep(2)
+        html = driver.page_source 
+        # print(html)
+        
+        driver.execute_script("return document.readyState")
 
-    analyzer = Analyzer(html, False, current_date)
-    leagues = analyzer.get_data()
+        time.sleep(2)
 
-    if len(leagues) != 0:
-        record = Record(current_date, passed_minutes)
-        record.set_data(leagues)
-        record.create_file_sheet("record.xlsx")
+        analyzer = Analyzer(html, False, current_date)
+        leagues = analyzer.get_data()
+
+        if len(leagues) != 0:
+            record = Record(current_date, passed_minutes)
+            record.set_data(leagues)
+            record.create_file_sheet("record.xlsx")
 
     print("URL")
     print(driver.current_url)
