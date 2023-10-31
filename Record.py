@@ -55,6 +55,26 @@ class Record():
         num_rows = int(worksheet.max_row)
         return (num_rows - 3) // 24
     
+    def get_match_index(self, worksheet, match, league_name):
+        base = 4
+        # cnt = 0
+        rows = (int(worksheet.max_row) - 3) // 24
+        if rows < 0: rows = 0
+        i = 0
+        for i in range(rows):
+            idx = base + i * 24
+            cell = worksheet.cell(column = 2, row = idx)
+            # print(str(cell.value))
+            if "".join(str(cell.value).split()) == "": break
+            if "".join(str(cell.value).split()) == "".join(str(match.match_name).split()):
+                if "".join(str(worksheet.cell(column = 1, row = idx).value).split()) == "".join(str(league_name).split()):
+                    # print("Checked: " + str(idx))
+                    return i
+                    # break
+        return rows
+            # cnt = cnt + 1
+        # print("Checked: -1
+    
     def check_match(self, worksheet, match, league_name):
         base = 4
         # cnt = 0
@@ -330,12 +350,17 @@ class Record():
                     cnt = self.get_match_count(worksheet)
                     print("current matches " + str(cnt))
 
-                    idx = self.check_match(worksheet, match, league.league_name)
                     update_flag = True
-                    if idx != -1:
-                        cnt = idx
+
+                    # idx = self.check_match(worksheet, match, league.league_name)
+                    # update_flag = True
+                    # if idx != -1:
+                    #     cnt = idx
+
+                idx = self.get_match_index(worksheet, match, league.league_name)
                 
-                self.create_match(worksheet, cnt, date_idx, match, league.league_name)
+                # self.create_match(worksheet, cnt, date_idx, match, league.league_name)
+                self.create_match(worksheet, idx, date_idx, match, league.league_name)
                 cnt = cnt + 1
 
         self.save_workbook(filename, workbook)

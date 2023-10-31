@@ -90,11 +90,14 @@ def ScrapeData():
     
     url = "https://www.m8clicks.com"
     early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd="
-    early_url2 = "&isWC=False&ia=2&tf=-1"
-    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1"
+    # early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd="
+    # "ot=e&ov=1&isWC=False&ia=0&isSiteFav=False"
+    early_url2 = "&isWC=False&ia=0&tf=-1"
+    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1&isSiteFav=False"
+    # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=False&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
-    chromeOptions.add_argument('--headless')
+    # chromeOptions.add_argument('--headless')
     chromeOptions.add_argument('--ignore-certificate-errors')
 
     # instantiate a webdriver
@@ -188,7 +191,7 @@ def ScrapeData():
 
     # Early Recording
 
-    for i in range(5):
+    for i in range(4):
         early_date_format = change_date_format(current_date, i + 1, "%m/%d/%Y", "%Y-%m-%d")
         early_url = early_url1 + early_date_format + early_url2
 
