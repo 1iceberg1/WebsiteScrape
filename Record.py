@@ -24,12 +24,12 @@ class Record():
     def check_timeline(self, worksheet):
         base = 6
         max_idx = (int(worksheet.max_column) - 5) // 48
-        i = -1
-        for i in range(max_idx + 1):
-            date_value = worksheet.cell(row = 1, column = base + i * 48).value
+        if max_idx < 0 : max_idx = 0
+        for i in range(max_idx):
+            date_value = str(worksheet.cell(row = 1, column = base + i * 48).value)
             if date_value == self.current_date:
                 return (i, 1)
-        return (i, 0)
+        return (max_idx, 0)
     
     def set_data(self, leagues):
         self.data = leagues

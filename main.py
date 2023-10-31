@@ -3,17 +3,14 @@ import os
 from openpyxl.utils import exceptions
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-from openpyxl import Workbook
 import time
 import sched
 from Analyzer import Analyzer
 from Record import Record
 import re
 import datetime
+from selenium.common.exceptions import NoSuchElementException
 
 UserName = 'nextaa'
 PassWord = 'Qwer1234'
@@ -123,13 +120,26 @@ def ScrapeData():
     # if not os.path.exists("cookies.pkl"):
     driver.get(url)
     time.sleep(3)
-    username_filed = driver.find_element('id', 'txtUserName')
-    password_filed = driver.find_element('id', 'txtPassword')
-
-    username_filed.send_keys(UserName)
-    password_filed.send_keys(PassWord)
     
-    password_filed.send_keys(Keys.RETURN)
+    try:
+
+        username_filed = driver.find_element('id', 'txtUserName')
+        password_filed = driver.find_element('id', 'txtPassword')
+
+        username_filed.send_keys(UserName)
+        password_filed.send_keys(PassWord)
+        
+        password_filed.send_keys(Keys.RETURN)
+    
+    except NoSuchElementException:
+        
+        driver.close() # closing the webdriver 
+        print("The website is not available now!")
+        print("Please try again later...")
+        
+        end_time = time.time()
+
+        return (end_time - start_time, passed_minutes)
 
     time.sleep(2)
 
@@ -191,7 +201,7 @@ def ScrapeData():
 
     # Early Recording
 
-    for i in range(4):
+    for i in range(2):
         early_date_format = change_date_format(current_date, i + 1, "%m/%d/%Y", "%Y-%m-%d")
         early_url = early_url1 + early_date_format + early_url2
 
