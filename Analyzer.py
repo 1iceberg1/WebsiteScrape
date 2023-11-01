@@ -39,7 +39,7 @@ class Match():
         self.u4 = ""
 
 class Analyzer():
-    def __init__(self, page, isToday, current_date):
+    def __init__(self, page, isToday, current_date, passed_minutes):
         
         # # read from external file
         # url = "saved_html.html"
@@ -47,6 +47,7 @@ class Analyzer():
         # soup = BeautifulSoup(page.read(), 'html.parser')
         self.isToday = isToday
         self.current_date = current_date
+        self.passed_minutes = passed_minutes
 
         self.leagues = []
 
@@ -70,6 +71,8 @@ class Analyzer():
         all_match_count = 0
 
         cnt_match = 0
+
+        prev_match_time = ""
 
         for football_table in football_tables:
             # get league_name
@@ -116,12 +119,13 @@ class Analyzer():
                 td_tag = td_tag.next_sibling
 
                 if time_value != '':
+                    time_flag = True
                     if match_flag:
                         matches.append(match)
                         cnt_match = cnt_match + 1
                     match_flag = True
                     match = Match()
-                    
+
                     if "/" in time_value:
                         date = time_value[:5]
                         input_format = "%d/%m"
@@ -141,8 +145,15 @@ class Analyzer():
                             continue
                         match.date = date + "/" + str(year)
                     else :
+                        if self.isToday:
+                            match_time = time_value[-7:]
+                            time_flag = self.check_match_time(prev_match_time, match_time)
+                            if time_flag == False:
+                                date_object = datetime.datetime.strptime(self.current_date, "%m/%d/%Y")
+                                date_object = date_object + datetime.timedelta(days = 1)
+                                self.current_date = datetime.datetime.strftime(date_object, "%m/%d/%Y")
                         match.date = self.current_date
-                    
+
                     match.time = time_value[-7:]
                     print(match.time)
                     print('')
@@ -151,6 +162,8 @@ class Analyzer():
                     
                     # get team value
                     self.get_team_value(td_tag, match)
+
+                    prev_match_time = time_value[-7:]
 
                 print(cnt_match)
 
@@ -202,6 +215,28 @@ class Analyzer():
         
         print(len(self.leagues))       
         print(all_match_count)
+
+    def check_match_time(self, prev_match_time, match_time):
+        
+        if prev_match_time == "":
+            time = datetime.datetime.strptime(match_time, "%I:%M%p")
+            if self.passed_minutes > time.hour * 60 + time.minute:
+                return False
+            else: return True
+
+        time_format = "%I:%M%p"
+
+        # Convert the time strings to datetime objects
+        time1 = datetime.datetime.strptime(prev_match_time, time_format)
+        time2 = datetime.datetime.strptime(match_time, time_format)
+
+        # Cacluate the time difference in minutes
+        time_diff = (time2 - time1).total_seconds() / 60
+
+        return time_diff >= 0
+
+
+
 
     def calculate_days_between_dates(self, date_str1, date_str2):
         # Define the input date format

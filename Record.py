@@ -1,6 +1,6 @@
 import os
 from openpyxl import Workbook, load_workbook
-from openpyxl.utils import exceptions
+from openpyxl.utils import exceptions, cell
 from openpyxl.styles import PatternFill, Alignment, Font, Border, Side
 from datetime import datetime, timedelta
 from openpyxl.formatting.rule import Rule
@@ -68,12 +68,77 @@ class Record():
             if "".join(str(cell.value).split()) == "": break
             if "".join(str(cell.value).split()) == "".join(str(match.match_name).split()):
                 if "".join(str(worksheet.cell(column = 1, row = idx).value).split()) == "".join(str(league_name).split()):
-                    # print("Checked: " + str(idx))
-                    return i
-                    # break
-        return rows
+                    if "".join(str(worksheet.cell(column = 4, row = idx).value).split()) == "".join(str(match.time).split()):
+                        return i
+                    worksheet.cell(column = 4, row = idx).value = match.time
+                    return self.replace_match(worksheet, match, i)
+        return self.insert_match(worksheet, match)
             # cnt = cnt + 1
         # print("Checked: -1
+
+    def check_match_time(self, prev_match_time, match_time):
+        
+        if prev_match_time == "":
+            time = datetime.strptime(match_time, "%I:%M%p")
+            if self.passed_minutes > time.hour * 60 + time.minute:
+                return False
+            else: return True
+
+        time_format = "%I:%M%p"
+
+        # Convert the time strings to datetime objects
+        time1 = datetime.strptime(prev_match_time, time_format)
+        time2 = datetime.strptime(match_time, time_format)
+
+        # Cacluate the time difference in minutes
+        time_diff = (time2 - time1).total_seconds() / 60
+
+        return time_diff >= 0
+
+    def insert_match(self, worksheet, match):
+        rows = (int(worksheet.max_row) - 3) // 24
+        if rows < 0: rows = 0
+        i = 0
+        base = 4
+
+        for i in range(rows):
+            idx = base + i * 24
+            prev_time = str(worksheet.cell(column = 4, row = idx).value)
+            if self.check_match_time(prev_time, match.time):
+                continue
+            break
+        if i == rows - 1: i = rows
+        worksheet.insert_rows(base + i * 24, 24)
+        return i
+
+    def replace_match(self, worksheet, match, n):
+        rows = (int(worksheet.max_row) - 3) // 24
+        if rows < 0: rows = 0
+        i = 0
+        cnt = 0
+        base = 4
+
+        for i in range(rows):
+            if i == n: continue
+            idx = base + i * 24
+            cnt = cnt + 1
+            prev_time = str(worksheet.cell(column = 4, row = idx).value)
+            if self.check_match_time(prev_time, match.time):
+                continue
+            worksheet.insert_rows(idx, 24)
+            pivot_n = n
+            
+            if i < n: pivot_n = pivot_n + 1
+            pivot_idx = base + pivot_n * 24
+            cols = int(worksheet.max_column)
+            col_letter = cell.get_column_letter(cols)
+            range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
+
+            worksheet.move_range(range_string, rows = (pivot_n - i) * 24)
+            worksheet.delete_rows(pivot_idx, 24)
+            break
+        if i < rows - 1 : return i
+        else: return rows
     
     def check_match(self, worksheet, match, league_name):
         base = 4
@@ -328,7 +393,7 @@ class Record():
         for league in leagues:
             matches = league.matches
             for match in matches:
-                # get match date's worksheet
+                
                 match_date = match.date
                 
                 if match_date != compare_date:
