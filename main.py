@@ -203,7 +203,9 @@ def ScrapeData():
 
     # Early Recording
 
-    for i in range(2):
+    k = 0
+    
+    for i in range(6):
         early_date_format = change_date_format(current_date, i, "%m/%d/%Y", "%Y-%m-%d")
         early_url = early_url1 + early_date_format + early_url2
 
@@ -236,6 +238,9 @@ def ScrapeData():
             record = Record(current_date, passed_minutes)
             record.set_data(leagues)
             record.create_file_sheet("record.xlsx")
+            k = k + 1
+        if k == 5: break
+
 
     print("URL")
     print(driver.current_url)

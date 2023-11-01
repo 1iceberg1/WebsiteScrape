@@ -23,7 +23,7 @@ class Record():
 
     def check_timeline(self, worksheet):
         base = 6
-        max_idx = (int(worksheet.max_column) - 5) // 48
+        max_idx = (int(self.get_max_column(worksheet)) - 5) // 48
         if max_idx < 0 : max_idx = 0
         for i in range(max_idx):
             date_value = str(worksheet.cell(row = 1, column = base + i * 48).value)
@@ -52,13 +52,13 @@ class Record():
             print("Please check your file is currently open or opend as read-only")
 
     def get_match_count(self, worksheet):
-        num_rows = int(worksheet.max_row)
+        num_rows = self.get_max_row(worksheet)
         return (num_rows - 3) // 24
     
     def get_match_index(self, worksheet, match, league_name):
         base = 4
         # cnt = 0
-        rows = (int(worksheet.max_row) - 3) // 24
+        rows = (int(self.get_max_row(worksheet)) - 3) // 24
         if rows < 0: rows = 0
         i = 0
         for i in range(rows):
@@ -70,33 +70,36 @@ class Record():
                 if "".join(str(worksheet.cell(column = 1, row = idx).value).split()) == "".join(str(league_name).split()):
                     if "".join(str(worksheet.cell(column = 4, row = idx).value).split()) == "".join(str(match.time).split()):
                         return i
-                    worksheet.cell(column = 4, row = idx).value = match.time
-                    return self.replace_match(worksheet, match, i)
-        return self.insert_match(worksheet, match)
-            # cnt = cnt + 1
-        # print("Checked: -1
+                    for j in range(24):
+                        worksheet.cell(column = 4, row = idx + j).value = match.time
+                    ret = self.replace_match(worksheet, match, i)
+                    return ret
+        ret = self.insert_match(worksheet, match)
+        return ret
 
     def check_match_time(self, prev_match_time, match_time):
-        
-        if prev_match_time == "":
-            time = datetime.strptime(match_time, "%I:%M%p")
-            if self.passed_minutes > time.hour * 60 + time.minute:
-                return False
-            else: return True
 
         time_format = "%I:%M%p"
 
-        # Convert the time strings to datetime objects
-        time1 = datetime.strptime(prev_match_time, time_format)
-        time2 = datetime.strptime(match_time, time_format)
+        try:
+            # Convert the time strings to datetime objects
+            time1 = datetime.strptime(prev_match_time, time_format)
+            time2 = datetime.strptime(match_time, time_format)
 
-        # Cacluate the time difference in minutes
-        time_diff = (time2 - time1).total_seconds() / 60
+            # Cacluate the time difference in minutes
+            time_diff = (time2 - time1).total_seconds() / 60
+        except:
+            print(prev_match_time)
+            print(match_time)
+            print(self.current_date)
+
+
+
 
         return time_diff >= 0
 
     def insert_match(self, worksheet, match):
-        rows = (int(worksheet.max_row) - 3) // 24
+        rows = (int(self.get_max_row(worksheet)) - 3) // 24
         if rows < 0: rows = 0
         i = 0
         base = 4
@@ -104,24 +107,25 @@ class Record():
         for i in range(rows):
             idx = base + i * 24
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
+            # print("Prev: " + str(i) + " " + str(rows) + " " + prev_time)
             if self.check_match_time(prev_time, match.time):
                 continue
             break
-        if i == rows - 1: i = rows
+        else:
+            if rows: i = i + 1
         worksheet.insert_rows(base + i * 24, 24)
         return i
 
     def replace_match(self, worksheet, match, n):
-        rows = (int(worksheet.max_row) - 3) // 24
+        rows = (int(self.get_max_row(worksheet)) - 3) // 24
+        cols = (int(self.get_max_column(worksheet)) - 3) // 48
         if rows < 0: rows = 0
         i = 0
-        cnt = 0
         base = 4
 
         for i in range(rows):
             if i == n: continue
             idx = base + i * 24
-            cnt = cnt + 1
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
             if self.check_match_time(prev_time, match.time):
                 continue
@@ -130,20 +134,40 @@ class Record():
             
             if i < n: pivot_n = pivot_n + 1
             pivot_idx = base + pivot_n * 24
-            cols = int(worksheet.max_column)
             col_letter = cell.get_column_letter(cols)
             range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
 
             worksheet.move_range(range_string, rows = (pivot_n - i) * 24)
             worksheet.delete_rows(pivot_idx, 24)
             break
-        if i < rows - 1 : return i
-        else: return rows
+        else: 
+            if rows: i = i + 1
+        return i
+    
+    def get_max_column(self, worksheet):
+        cols = (int(worksheet.max_column) - 5) // 48
+        i = 0
+        for i in range(cols):
+            if "".join(str(worksheet.cell(column = 6 + i * 48, row = 2).value)) == "":
+                break
+        else: 
+            if cols: i = i + 1
+        return i * 48 + 5
+
+    def get_max_row(self, worksheet):
+        rows = (int(worksheet.max_row) - 3) // 24
+        i = 0
+        for i in range(rows):
+            if "".join(str(worksheet.cell(column = 4, row = 4 + i * 24).value)) == "":
+                break
+        else: 
+            if rows: i = i + 1
+        return i * 24 + 3
     
     def check_match(self, worksheet, match, league_name):
         base = 4
         # cnt = 0
-        rows = int(worksheet.max_row)
+        rows = self.get_max_row(worksheet)
         for i in range((rows - 3) // 24):
             idx = base + i * 24
             cell = worksheet.cell(column = 2, row = idx)
@@ -354,7 +378,7 @@ class Record():
 
         print(today)
 
-        for i in range(6):
+        for i in range(7):
             after_days = date_obj + timedelta(days = i)
 
             current_date = after_days.strftime(output_format)

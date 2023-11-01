@@ -140,7 +140,7 @@ class Analyzer():
                             year = year + 1
                             days = days + 365
 
-                        if days >= 5:
+                        if days > 6:
                             match_flag = False
                             continue
                         match.date = date + "/" + str(year)
