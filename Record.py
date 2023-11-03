@@ -23,7 +23,7 @@ class Record():
 
     def check_timeline(self, worksheet):
         base = 6
-        max_idx = (int(self.get_max_column(worksheet)) - 5) // 48
+        max_idx = (int(worksheet.max_column) - 5) // 48
         if max_idx < 0 : max_idx = 0
         for i in range(max_idx):
             date_value = str(worksheet.cell(row = 1, column = base + i * 48).value)
@@ -52,13 +52,13 @@ class Record():
             print("Please check your file is currently open or opend as read-only")
 
     def get_match_count(self, worksheet):
-        num_rows = self.get_max_row(worksheet)
+        num_rows = worksheet.max_row
         return (num_rows - 3) // 24
     
     def get_match_index(self, worksheet, match, league_name):
         base = 4
         # cnt = 0
-        rows = (int(self.get_max_row(worksheet)) - 3) // 24
+        rows = (int(worksheet.max_row) - 3) // 24
         if rows < 0: rows = 0
         i = 0
         for i in range(rows):
@@ -68,12 +68,12 @@ class Record():
             if "".join(str(cell.value).split()) == "": break
             if "".join(str(cell.value).split()) == "".join(str(match.match_name).split()):
                 if "".join(str(worksheet.cell(column = 1, row = idx).value).split()) == "".join(str(league_name).split()):
-                    if "".join(str(worksheet.cell(column = 4, row = idx).value).split()) == "".join(str(match.time).split()):
-                        return i
-                    for j in range(24):
-                        worksheet.cell(column = 4, row = idx + j).value = match.time
-                    ret = self.replace_match(worksheet, match, i)
-                    return ret
+                    return i
+                    # if "".join(str(worksheet.cell(column = 4, row = idx).value).split()) == "".join(str(match.time).split()):
+                    #     for j in range(24):
+                    #         worksheet.cell(column = 4, row = idx + j).value = match.time
+                    #     ret = self.replace_match(worksheet, match, i)
+                    #     return ret
         ret = self.insert_match(worksheet, match)
         return ret
 
@@ -99,7 +99,7 @@ class Record():
         return time_diff >= 0
 
     def insert_match(self, worksheet, match):
-        rows = (int(self.get_max_row(worksheet)) - 3) // 24
+        rows = (int(worksheet.max_row) - 3) // 24
         if rows < 0: rows = 0
         i = 0
         base = 4
@@ -107,17 +107,17 @@ class Record():
         for i in range(rows):
             idx = base + i * 24
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
-            # print("Prev: " + str(i) + " " + str(rows) + " " + prev_time)
+            # print("Insert Prev: " + str(i) + " " + str(rows) + " " + prev_time)
             if self.check_match_time(prev_time, match.time):
                 continue
-            break
+            worksheet.insert_rows(idx, 24)
+            return i
         else:
             if rows: i = i + 1
-        worksheet.insert_rows(base + i * 24, 24)
         return i
 
     def replace_match(self, worksheet, match, n):
-        rows = (int(self.get_max_row(worksheet)) - 3) // 24
+        rows = (int(worksheet.max_row) - 3) // 24
         cols = (int(self.get_max_column(worksheet)) - 3) // 48
         if rows < 0: rows = 0
         i = 0
@@ -127,6 +127,7 @@ class Record():
             if i == n: continue
             idx = base + i * 24
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
+            print("Prev: " + prev_time + " " + str(idx))
             if self.check_match_time(prev_time, match.time):
                 continue
             worksheet.insert_rows(idx, 24)
@@ -137,9 +138,10 @@ class Record():
             col_letter = cell.get_column_letter(cols)
             range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
 
-            worksheet.move_range(range_string, rows = (pivot_n - i) * 24)
+            worksheet.move_range(range_string, rows = (i - pivot_n) * 24)
             worksheet.delete_rows(pivot_idx, 24)
-            break
+            if i > n: i = i - 1
+            return i
         else: 
             if rows: i = i + 1
         return i
@@ -167,7 +169,7 @@ class Record():
     def check_match(self, worksheet, match, league_name):
         base = 4
         # cnt = 0
-        rows = self.get_max_row(worksheet)
+        rows = worksheet.max_row
         for i in range((rows - 3) // 24):
             idx = base + i * 24
             cell = worksheet.cell(column = 2, row = idx)

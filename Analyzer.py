@@ -87,6 +87,9 @@ class Analyzer():
             # if self.isToday:
             if "SABA" in league_name:
                 continue
+
+            if "TEST" in league_name:
+                continue
             
             tr_tag = football_table.tr
             count = 0

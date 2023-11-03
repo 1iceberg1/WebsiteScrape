@@ -96,7 +96,8 @@ def ScrapeData():
     # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=False&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
-    # chromeOptions.add_argument('--headless')
+    chromeOptions.add_argument('--headless')
+    chromeOptions.add_argument('--allow-running-insecure-content')
     chromeOptions.add_argument('--ignore-certificate-errors')
 
     # instantiate a webdriver
