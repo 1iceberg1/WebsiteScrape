@@ -118,7 +118,7 @@ class Record():
 
     def replace_match(self, worksheet, match, n):
         rows = (int(worksheet.max_row) - 3) // 24
-        cols = (int(self.get_max_column(worksheet)) - 3) // 48
+        cols = int(self.get_max_column(worksheet))
         if rows < 0: rows = 0
         i = 0
         base = 4
@@ -200,7 +200,7 @@ class Record():
 
         index = self.passed_minutes // 30 + day_diff * 48
 
-        str_check = str(worksheet.cell(row = base, column = 1).value)
+        str_check = str(worksheet.cell(row = base, column = 6 + day_diff * 48).value)
 
         # print("CHECK: " + str_check)
 
