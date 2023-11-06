@@ -90,6 +90,24 @@ class Analyzer():
 
             if "TEST" in league_name:
                 continue
+
+            if "CORNERS" in league_name:
+                continue
+
+            if "BOOKING" in league_name:
+                continue
+
+            if "OFFSIDE" in league_name:
+                continue
+
+            if "HOME TEAM" in league_name:
+                continue
+
+            if "WINNER" in league_name:
+                continue
+
+            if "TOTAL GOALS" in league_name:
+                continue
             
             tr_tag = football_table.tr
             count = 0

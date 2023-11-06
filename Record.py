@@ -20,6 +20,7 @@ class Record():
         date_obj = datetime.strptime(self.current_date, input_format)
         today = date_obj.strftime(output_format)
         self.worksheet_name = today
+        self.match_map = {}
 
     def check_timeline(self, worksheet):
         base = 6
@@ -30,6 +31,20 @@ class Record():
             if date_value == self.current_date:
                 return (i, 1)
         return (max_idx, 0)
+    
+    def set_match_map(self, worksheet):
+        self.match_map = {}
+        base = 4
+        # cnt = 0
+        rows = (int(worksheet.max_row) - 3) // 24
+        if rows < 0: rows = 0
+        i = 0
+        for i in range(rows):
+            idx = base + i * 24
+            cell = worksheet.cell(column = 2, row = idx)
+            # print(str(cell.value))
+            if "".join(str(cell.value).split()) == "": break
+            self.match_map["".join(str(cell.value).split())] = i
     
     def set_data(self, leagues):
         self.data = leagues
@@ -61,19 +76,11 @@ class Record():
         rows = (int(worksheet.max_row) - 3) // 24
         if rows < 0: rows = 0
         i = 0
-        for i in range(rows):
+        if "".join(str(match.match_name).split()) in self.match_map:
+            i = self.match_map["".join(str(match.match_name).split())]
             idx = base + i * 24
-            cell = worksheet.cell(column = 2, row = idx)
-            # print(str(cell.value))
-            if "".join(str(cell.value).split()) == "": break
-            if "".join(str(cell.value).split()) == "".join(str(match.match_name).split()):
-                if "".join(str(worksheet.cell(column = 1, row = idx).value).split()) == "".join(str(league_name).split()):
-                    return i
-                    # if "".join(str(worksheet.cell(column = 4, row = idx).value).split()) == "".join(str(match.time).split()):
-                    #     for j in range(24):
-                    #         worksheet.cell(column = 4, row = idx + j).value = match.time
-                    #     ret = self.replace_match(worksheet, match, i)
-                    #     return ret
+            if "".join(str(worksheet.cell(row = idx, column = 1).value).split()) == "".join(str(league_name).split()):
+                return i       
         ret = self.insert_match(worksheet, match)
         return ret
 
@@ -88,32 +95,40 @@ class Record():
 
             # Cacluate the time difference in minutes
             time_diff = (time2 - time1).total_seconds() / 60
+            return time_diff
         except:
             print(prev_match_time)
             print(match_time)
             print(self.current_date)
-
-
-
-
-        return time_diff >= 0
 
     def insert_match(self, worksheet, match):
         rows = (int(worksheet.max_row) - 3) // 24
         if rows < 0: rows = 0
         i = 0
         base = 4
-
-        for i in range(rows):
-            idx = base + i * 24
+        st = 0
+        en = rows - 1
+        mid = 0
+        flag = 0
+        while st <= en:
+            mid = (st + en) // 2
+            idx = base + mid * 24
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
-            # print("Insert Prev: " + str(i) + " " + str(rows) + " " + prev_time)
-            if self.check_match_time(prev_time, match.time):
-                continue
-            worksheet.insert_rows(idx, 24)
-            return i
-        else:
-            if rows: i = i + 1
+            time_diff = self.check_match_time(prev_time, match.time)
+            
+            if time_diff == 0:
+                flag = 1
+                break
+            if time_diff > 0:
+                st = mid + 1
+            if time_diff < 0:
+                en = mid - 1
+
+        if flag == 1: i = mid
+        else: i = st
+        idx = base + i * 24
+        worksheet.insert_rows(idx, 24)
+        self.set_match_map(worksheet)
         return i
 
     def replace_match(self, worksheet, match, n):
@@ -200,13 +215,15 @@ class Record():
 
         index = self.passed_minutes // 30 + day_diff * 48
 
-        str_check = str(worksheet.cell(row = base, column = 6 + day_diff * 48).value)
+        str_check = str(worksheet.cell(row = base, column = 1).value)
+        check_cell = worksheet.cell(row = base, column = 6 + day_diff * 48)
 
         # print("CHECK: " + str_check)
 
-        if "".join(str_check.split()) == "" or str_check == "None":
-            print("NEW!")
-            for j in range(24):
+        for j in range(24):
+            if "".join(str_check.split()) == "" or str_check == "None":
+                if j == 0: print("NEW!")
+            
                 worksheet.cell(row = base + j, column = 1).value = league_name
                 worksheet.cell(row = base + j, column = 2).value = match.match_name
                 worksheet.cell(row = base + j, column = 3).value = match.date
@@ -238,6 +255,7 @@ class Record():
                     if j < 12: continue
                     cell1.fill = pattern
             
+            if check_cell.fill != pattern:
                 for k in range(48 * day_diff + 5, 48 * day_diff + 53):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
                     cell1.font = font
@@ -428,7 +446,6 @@ class Record():
                     cnt = 0
                 
                 if update_flag == False:
-
                     date_obj = datetime.strptime(match_date, "%m/%d/%Y")
                     worksheet = workbook[date_obj.strftime("%d %b %Y")]
 
@@ -436,6 +453,8 @@ class Record():
                     
                     if isExist == False:
                         self.adding_timeline(worksheet, date_idx)
+
+                    self.set_match_map(worksheet)
 
                     # get amount of current recoreded matches
                     cnt = self.get_match_count(worksheet)
