@@ -108,6 +108,9 @@ class Analyzer():
 
             if "TOTAL GOALS" in league_name:
                 continue
+
+            if "WHICH" in league_name:
+                continue
             
             tr_tag = football_table.tr
             count = 0

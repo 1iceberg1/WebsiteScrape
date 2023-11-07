@@ -1,6 +1,7 @@
 import os
 from openpyxl import Workbook, load_workbook
-from openpyxl.utils import exceptions, cell
+from openpyxl.utils import exceptions
+from openpyxl.utils import cell as celll
 from openpyxl.styles import PatternFill, Alignment, Font, Border, Side
 from datetime import datetime, timedelta
 from openpyxl.formatting.rule import Rule
@@ -81,14 +82,14 @@ class Record():
             idx = base + i * 24
             if "".join(str(worksheet.cell(row = idx, column = 1).value).split()) == "".join(str(league_name).split()):
                 if "".join(str(worksheet.cell(row = idx, column = 4).value).split()) == "".join(str(match.time).split()):
-                    return i
+                    return (i, 1)
                 else:
                     for j in range(24):
                         worksheet.cell(row = idx + j, column = 4).value = str(match.time)
                     ret = self.replace_match(worksheet, match, i)
-                    return ret
-        ret = self.insert_match(worksheet, match)
-        return ret
+                    return (ret, 0)
+        ret, f = self.insert_match(worksheet, match)
+        return (ret, f)
 
     def check_match_time(self, prev_match_time, match_time):
 
@@ -135,8 +136,9 @@ class Record():
         else: i = st
         idx = base + i * 24
         worksheet.insert_rows(idx, 24)
-        self.set_match_map(worksheet)
-        return i
+        if i == rows: 
+            return (i, 2)
+        else: return (i, 0)
 
     def replace_match(self, worksheet, match, n):
         rows = (int(worksheet.max_row) - 3) // 24
@@ -159,7 +161,7 @@ class Record():
         
         if i < n: pivot_n = pivot_n + 1
         pivot_idx = base + pivot_n * 24
-        col_letter = cell.get_column_letter(cols)
+        col_letter = celll.get_column_letter(cols)
         range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
 
         worksheet.move_range(range_string, rows = (i - pivot_n) * 24)
@@ -331,11 +333,11 @@ class Record():
         worksheet.cell(row = 3, column = 4).font = Font(bold=False, name='Verdana', size=7)
 
         # set column width
-        worksheet.column_dimensions['A'].width = 60
-        worksheet.column_dimensions['B'].width = 60
-        worksheet.column_dimensions['C'].width = 15
-        worksheet.column_dimensions['D'].width = 12
-        worksheet.column_dimensions['E'].width = 3
+        worksheet.column_dimensions['A'].width = 50
+        worksheet.column_dimensions['B'].width = 50
+        worksheet.column_dimensions['C'].width = 10
+        worksheet.column_dimensions['D'].width = 7
+        worksheet.column_dimensions['E'].width = 2
 
     def calculate_days_between_dates(self, date_str1, date_str2):
         # Define the input date format
@@ -359,7 +361,7 @@ class Record():
         for i in range(48 * idx, 48 * idx + 48):
             worksheet.cell(row = 1, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
             worksheet.cell(row = 2, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
-            worksheet.column_dimensions[cell.get_column_letter(6 + i)].width = 9
+            worksheet.column_dimensions[celll.get_column_letter(6 + i)].width = 5
 
         font = Font(bold=False, name='Verdana', size=7)
 
@@ -473,10 +475,14 @@ class Record():
                     # if idx != -1:
                     #     cnt = idx
 
-                idx = self.get_match_index(worksheet, match, league.league_name)
+                idx, f = self.get_match_index(worksheet, match, league.league_name)
                 
                 # self.create_match(worksheet, cnt, date_idx, match, league.league_name)
                 self.create_match(worksheet, idx, date_idx, match, league.league_name)
+                if f == 0: self.set_match_map(worksheet)
+                if f == 2:
+                    rows = (int(worksheet.max_row) - 3) // 24
+                    self.match_map["".join(str(match.match_name).split())] = rows - 1
                 cnt = cnt + 1
 
         self.save_workbook(filename, workbook)
