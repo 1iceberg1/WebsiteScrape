@@ -80,7 +80,13 @@ class Record():
             i = self.match_map["".join(str(match.match_name).split())]
             idx = base + i * 24
             if "".join(str(worksheet.cell(row = idx, column = 1).value).split()) == "".join(str(league_name).split()):
-                return i       
+                if "".join(str(worksheet.cell(row = idx, column = 4).value).split()) == "".join(str(match.time).split()):
+                    return i
+                else:
+                    for j in range(24):
+                        worksheet.cell(row = idx + j, column = 4).value = str(match.time)
+                    ret = self.replace_match(worksheet, match, i)
+                    return ret
         ret = self.insert_match(worksheet, match)
         return ret
 
@@ -95,11 +101,12 @@ class Record():
 
             # Cacluate the time difference in minutes
             time_diff = (time2 - time1).total_seconds() / 60
-            return time_diff
+            
         except:
             print(prev_match_time)
             print(match_time)
             print(self.current_date)
+        return time_diff
 
     def insert_match(self, worksheet, match):
         rows = (int(worksheet.max_row) - 3) // 24
@@ -143,22 +150,20 @@ class Record():
             idx = base + i * 24
             prev_time = str(worksheet.cell(column = 4, row = idx).value)
             print("Prev: " + prev_time + " " + str(idx))
-            if self.check_match_time(prev_time, match.time):
-                continue
-            worksheet.insert_rows(idx, 24)
-            pivot_n = n
-            
-            if i < n: pivot_n = pivot_n + 1
-            pivot_idx = base + pivot_n * 24
-            col_letter = cell.get_column_letter(cols)
-            range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
-
-            worksheet.move_range(range_string, rows = (i - pivot_n) * 24)
-            worksheet.delete_rows(pivot_idx, 24)
-            if i > n: i = i - 1
-            return i
+            if self.check_match_time(prev_time, match.time) < 0: break
         else: 
             if rows: i = i + 1
+        idx = base + i * 24
+        worksheet.insert_rows(idx, 24)
+        pivot_n = n
+        
+        if i < n: pivot_n = pivot_n + 1
+        pivot_idx = base + pivot_n * 24
+        col_letter = cell.get_column_letter(cols)
+        range_string = "A" + str(pivot_idx) + ":" + col_letter + str(pivot_idx + 23)
+
+        worksheet.move_range(range_string, rows = (i - pivot_n) * 24)
+        worksheet.delete_rows(pivot_idx, 24)
         return i
     
     def get_max_column(self, worksheet):

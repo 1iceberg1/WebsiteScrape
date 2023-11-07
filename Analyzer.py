@@ -91,7 +91,7 @@ class Analyzer():
             if "TEST" in league_name:
                 continue
 
-            if "CORNERS" in league_name:
+            if "CORNER" in league_name:
                 continue
 
             if "BOOKING" in league_name:
