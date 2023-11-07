@@ -261,7 +261,7 @@ def call_function(scheduler):
     print("RECORD TIME: " + str(record_time))
     print("Runtime: " + str(runtime))
     # Calculate
-    current_seconds = record_time * 60 + int(runtime) + 1
+    current_seconds = record_time * 60 + int(runtime) + 1 + 300
     next_time = current_seconds // 1800 + 1
     after = 1800 * next_time - current_seconds
     if after < 0: after = 0

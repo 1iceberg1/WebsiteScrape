@@ -206,7 +206,8 @@ class Record():
     def create_match(self, worksheet, i, day_diff, match, league_name):
         
         base = 4 + i * 24
-        font = Font(bold = True, name = 'Calibri', size = 11)
+        font = Font(bold = False, name = 'Verdana', size = 7)
+        font2 = Font(bold = False, name = 'Verdana', size = 8)
         alignment = Alignment(horizontal = 'center', vertical = 'center')
         pattern = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
 
@@ -255,6 +256,7 @@ class Record():
                 for k in range(5):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
                     cell1.font = font
+                    if k == 4: cell1.font = font2
                     cell1.alignment = alignment
                     cell1.border = border
                     if j < 12: continue
@@ -263,7 +265,7 @@ class Record():
             if check_cell.fill != pattern:
                 for k in range(48 * day_diff + 5, 48 * day_diff + 53):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
-                    cell1.font = font
+                    cell1.font = font2
                     cell1.alignment = alignment
                     cell1.border = border
                     if j < 12: continue
@@ -313,26 +315,27 @@ class Record():
         merge_cell.fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
         
         # set the font style, size, and alignment
-        merge_font = Font(bold=True, name='Times New Roman', size=14)
+        merge_font = Font(bold=False, name='Verdana', size=7)
         merge_alignment = Alignment(horizontal='center', vertical='center')
         merge_cell.font = merge_font
         merge_cell.alignment = merge_alignment
 
         # format title cells
         worksheet.cell(row = 3, column = 1).value = 'League'
-        worksheet.cell(row = 3, column = 1).font = Font(bold=True, name='Calibri', size=11)
+        worksheet.cell(row = 3, column = 1).font = Font(bold=False, name='Verdana', size=7)
         worksheet.cell(row = 3, column = 2).value = 'Match'
-        worksheet.cell(row = 3, column = 2).font = Font(bold=True, name='Calibri', size=11)
+        worksheet.cell(row = 3, column = 2).font = Font(bold=False, name='Verdana', size=7)
         worksheet.cell(row = 3, column = 3).value = 'Start Date'
-        worksheet.cell(row = 3, column = 3).font = Font(bold=True, name='Calibri', size=11)
+        worksheet.cell(row = 3, column = 3).font = Font(bold=False, name='Verdana', size=7)
         worksheet.cell(row = 3, column = 4).value = 'Start Time'
-        worksheet.cell(row = 3, column = 4).font = Font(bold=True, name='Calibri', size=11)
+        worksheet.cell(row = 3, column = 4).font = Font(bold=False, name='Verdana', size=7)
 
         # set column width
         worksheet.column_dimensions['A'].width = 60
         worksheet.column_dimensions['B'].width = 60
         worksheet.column_dimensions['C'].width = 15
-        worksheet.column_dimensions['D'].width = 15
+        worksheet.column_dimensions['D'].width = 12
+        worksheet.column_dimensions['E'].width = 3
 
     def calculate_days_between_dates(self, date_str1, date_str2):
         # Define the input date format
@@ -356,8 +359,9 @@ class Record():
         for i in range(48 * idx, 48 * idx + 48):
             worksheet.cell(row = 1, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
             worksheet.cell(row = 2, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
+            worksheet.column_dimensions[cell.get_column_letter(6 + i)].width = 9
 
-        font = Font(bold=False, name='Calibri', size=11)
+        font = Font(bold=False, name='Verdana', size=7)
 
         for i in range(48):
             hour = i // 2
@@ -377,9 +381,6 @@ class Record():
             cell.value = self.current_date
             cell.alignment = Alignment(text_rotation=90, horizontal='center', vertical='center')
             cell.font = font
-
-
-
 
     def create_file_sheet(self, filename):
 
