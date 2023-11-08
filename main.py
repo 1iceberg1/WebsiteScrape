@@ -206,7 +206,7 @@ def ScrapeData():
 
     k = 0
     
-    for i in range(2):
+    for i in range(6):
         early_date_format = change_date_format(current_date, i, "%m/%d/%Y", "%Y-%m-%d")
         early_url = early_url1 + early_date_format + early_url2
 

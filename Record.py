@@ -209,7 +209,8 @@ class Record():
         
         base = 4 + i * 24
         font = Font(bold = False, name = 'Verdana', size = 7)
-        font2 = Font(bold = False, name = 'Verdana', size = 8)
+        font1 = Font(bold = False, name = 'Verdana', size = 8)
+        font2 = Font(bold = True, name = 'Verdana', size = 8)
         alignment = Alignment(horizontal = 'center', vertical = 'center')
         pattern = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
 
@@ -238,6 +239,7 @@ class Record():
                 worksheet.cell(row = base + j, column = 4).value = match.time
 
                 cell = worksheet.cell(row = base + j, column = 5)
+                cell.font = font1
                 
                 if j % 3 == 0:
                     if j < 12:
@@ -249,6 +251,7 @@ class Record():
                         cell.value = "MP"
                     else:
                         cell.value = str((j % 12) // 3) + "P"
+                    cell.font = font2
                 else:
                     if j < 12:
                         cell.value = "A"
@@ -267,7 +270,8 @@ class Record():
             if check_cell.fill != pattern:
                 for k in range(48 * day_diff + 5, 48 * day_diff + 53):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
-                    cell1.font = font2
+                    if j % 3 == 1: cell1.font = font2
+                    else: cell1.font = font
                     cell1.alignment = alignment
                     cell1.border = border
                     if j < 12: continue
@@ -325,19 +329,23 @@ class Record():
         # format title cells
         worksheet.cell(row = 3, column = 1).value = 'League'
         worksheet.cell(row = 3, column = 1).font = Font(bold=False, name='Verdana', size=7)
+        worksheet.cell(row = 3, column = 1).alignment = Alignment(horizontal='center', vertical='center')
         worksheet.cell(row = 3, column = 2).value = 'Match'
         worksheet.cell(row = 3, column = 2).font = Font(bold=False, name='Verdana', size=7)
+        worksheet.cell(row = 3, column = 2).alignment = Alignment(horizontal='center', vertical='center')
         worksheet.cell(row = 3, column = 3).value = 'Start Date'
         worksheet.cell(row = 3, column = 3).font = Font(bold=False, name='Verdana', size=7)
+        worksheet.cell(row = 3, column = 3).alignment = Alignment(horizontal='center', vertical='center')
         worksheet.cell(row = 3, column = 4).value = 'Start Time'
         worksheet.cell(row = 3, column = 4).font = Font(bold=False, name='Verdana', size=7)
+        worksheet.cell(row = 3, column = 4).alignment = Alignment(horizontal='center', vertical='center')
 
         # set column width
-        worksheet.column_dimensions['A'].width = 50
-        worksheet.column_dimensions['B'].width = 50
+        worksheet.column_dimensions['A'].width = 39
+        worksheet.column_dimensions['B'].width = 39
         worksheet.column_dimensions['C'].width = 10
-        worksheet.column_dimensions['D'].width = 7
-        worksheet.column_dimensions['E'].width = 2
+        worksheet.column_dimensions['D'].width = 8
+        worksheet.column_dimensions['E'].width = 3
 
     def calculate_days_between_dates(self, date_str1, date_str2):
         # Define the input date format
@@ -361,7 +369,7 @@ class Record():
         for i in range(48 * idx, 48 * idx + 48):
             worksheet.cell(row = 1, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
             worksheet.cell(row = 2, column = 6 + i).fill = PatternFill(start_color="FFF2CC", end_color="FFF2CC", fill_type="solid")
-            worksheet.column_dimensions[celll.get_column_letter(6 + i)].width = 5
+            worksheet.column_dimensions[celll.get_column_letter(6 + i)].width = 7.5
 
         font = Font(bold=False, name='Verdana', size=7)
 
@@ -369,7 +377,7 @@ class Record():
             hour = i // 2
             if hour >= 12: hour = hour - 12
             if hour == 0: hour = 12
-            minute = (i % 2) * 30
+            minute = (i % 2) * 30 + 25
             ap = "AM"
             if i >= 24:
                 ap = "PM"
