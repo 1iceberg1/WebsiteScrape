@@ -222,7 +222,9 @@ class Record():
                         top=Side(style=border_style, color=border_color),
                         bottom=Side(style=border_style, color=border_color))
 
-        index = self.passed_minutes // 30 + day_diff * 48
+        passed = self.passed_minutes - 25
+        if passed < 0: passed = 0
+        index = passed // 30 + day_diff * 48
 
         str_check = str(worksheet.cell(row = base, column = 1).value)
         check_cell = worksheet.cell(row = base, column = 6 + day_diff * 48)
@@ -261,7 +263,9 @@ class Record():
                 for k in range(5):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
                     cell1.font = font
-                    if k == 4: cell1.font = font2
+                    if k == 4:
+                        if j % 3 == 1: cell1.font = font2
+                        else: cell1.font = font1
                     cell1.alignment = alignment
                     cell1.border = border
                     if j < 12: continue
@@ -271,7 +275,7 @@ class Record():
                 for k in range(48 * day_diff + 5, 48 * day_diff + 53):
                     cell1 = worksheet.cell(row = base + j, column = k + 1)
                     if j % 3 == 1: cell1.font = font2
-                    else: cell1.font = font
+                    else: cell1.font = font1
                     cell1.alignment = alignment
                     cell1.border = border
                     if j < 12: continue
