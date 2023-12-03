@@ -418,10 +418,13 @@ class Record():
 
         print(today)
 
+        date_names = []
+
         for i in range(7):
             after_days = date_obj + timedelta(days = i)
 
             current_date = after_days.strftime(output_format)
+            date_names.append(current_date)
             isNew = False
 
             if current_date in workbook.sheetnames:
@@ -438,6 +441,22 @@ class Record():
 
         if save_flag:
             self.save_workbook(filename, workbook)
+
+        # save to single files and remove from main file
+        
+        workbook = load_workbook(filename)
+
+        for sheetname in workbook.sheetnames:
+            if sheetname in date_names:
+                continue
+            else:
+                sheets = workbook.sheetnames # ['Sheet1', 'Sheet2']
+
+                for s in sheets:
+                    if s != sheetname:
+                        sheet_name = workbook.get_sheet_by_name(s)
+                        workbook.remove_sheet(sheet_name)
+                self.save_workbook(workbook, sheetname + ".xlsx")
 
         workbook = load_workbook(filename)
 
