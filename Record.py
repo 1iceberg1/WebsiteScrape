@@ -456,7 +456,7 @@ class Record():
                     if s != sheetname:
                         sheet_name = workbook.get_sheet_by_name(s)
                         workbook.remove_sheet(sheet_name)
-                self.save_workbook(workbook, sheetname + ".xlsx")
+                self.save_workbook(sheetname + ".xlsx", workbook)
 
         workbook = load_workbook(filename)
 
