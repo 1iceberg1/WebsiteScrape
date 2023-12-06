@@ -11,6 +11,8 @@ from Record import Record
 import re
 import datetime
 from selenium.common.exceptions import NoSuchElementException
+from openpyxl import Workbook, load_workbook
+
 
 UserName = 'nextaa'
 PassWord = 'Qwer1234'
@@ -62,6 +64,23 @@ def get_date_value(page):
     formatted_date_str = date_obj.strftime(output_format)
     
     return formatted_date_str
+
+def save_workbook(filename, workbook):
+    success_flag = True
+    try:
+        workbook.save(filename)
+    except PermissionError:
+        print("Failed to save the workbook. The file is currently open.")
+        success_flag = False
+    except exceptions.ReadOnlyWorkbookException:
+        print("Failed to save the workbook. The file is opened as read-only.")
+        success_flag = False
+    except Exception as e:
+        print("An error occurred while saving the workbook:", str(e))
+        success_flag = False
+
+    if success_flag == False:
+        print("Please check your file is currently open or opend as read-only")
 
 def calculate_passed_minutes(time_str):
     # Split the time string into hours, minutes, seconds, and AM/PM components
@@ -194,13 +213,21 @@ def ScrapeData():
     html = driver.page_source 
     # print(html)
 
+    filename = "record.xlsx"
+
     analyzer = Analyzer(html, True, current_date, passed_minutes)
     leagues = analyzer.get_data()
+    
+    if not os.path.exists(filename):
+        workbook = Workbook()
+        save_workbook(filename, workbook)
+
+    workbook = load_workbook(filename)
 
     if len(leagues) != 0:
         record = Record(current_date, passed_minutes)
         record.set_data(leagues)
-        record.create_file_sheet("record.xlsx")
+        record.create_file_sheet(filename, workbook)
 
     # Early Recording
 
@@ -238,11 +265,13 @@ def ScrapeData():
         if len(leagues) != 0:
             record = Record(current_date, passed_minutes)
             record.set_data(leagues)
-            record.create_file_sheet("record.xlsx")
+            record.create_file_sheet(filename, workbook)
             k = k + 1
         if k == 5: break
 
 
+    save_workbook(filename, workbook)
+    
     print("URL")
     print(driver.current_url)
 
