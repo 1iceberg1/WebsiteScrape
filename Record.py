@@ -1,10 +1,10 @@
 import os
-from openpyxl import Workbook, load_workbook
 from openpyxl.utils import exceptions
 from openpyxl.utils import cell as celll
 from openpyxl.styles import PatternFill, Alignment, Font, Border, Side
 from datetime import datetime, timedelta
 from openpyxl.formatting.rule import Rule
+import copy
 
 # import xlsxwriter
 
@@ -396,16 +396,7 @@ class Record():
             cell.alignment = Alignment(text_rotation=90, horizontal='center', vertical='center')
             cell.font = font
 
-    def create_file_sheet(self, filename):
-
-        create_flag = False
-
-        if not os.path.exists(filename):
-            workbook = Workbook()
-            self.save_workbook(filename, workbook)
-            create_flag = True
-
-        workbook = load_workbook(filename)
+    def create_file_sheet(self, filename, workbook):
 
         # Generate the name with today's date
 
@@ -439,26 +430,41 @@ class Record():
             if isNew:
                 self.formatting_sheet_first_time(worksheet)
 
-        if save_flag:
-            self.save_workbook(filename, workbook)
+        # if save_flag:
+        #     self.save_workbook(filename, workbook)
 
         # save to single files and remove from main file
         
-        workbook = load_workbook(filename)
+        # workbook = load_workbook(filename)
+        sheetnames = workbook.sheetnames
 
-        for sheetname in workbook.sheetnames:
+        print("SheetNames")
+        print(sheetnames)
+        print("DateNames")
+        print(date_names)
+
+        save_flag = True
+
+        for sheetname in sheetnames:
             if sheetname in date_names:
                 continue
             else:
+                save_flag = False
+                workbook1 = copy.deepcopy(workbook)
+                workbook.remove_sheet(workbook.get_sheet_by_name(sheetname))
+
                 sheets = workbook.sheetnames # ['Sheet1', 'Sheet2']
 
                 for s in sheets:
                     if s != sheetname:
-                        sheet_name = workbook.get_sheet_by_name(s)
-                        workbook.remove_sheet(sheet_name)
-                self.save_workbook(workbook, sheetname + ".xlsx")
+                        sheet_name = workbook1.get_sheet_by_name(s)
+                        workbook1.remove_sheet(sheet_name)
+                self.save_workbook(sheetname + ".xlsx", workbook1)
 
-        workbook = load_workbook(filename)
+        # if save_flag == False: self.save_workbook("record.xlsx", workbook)
+
+        print("SheetNames")
+        print(workbook.sheetnames)
 
         # get data for processing
         leagues = self.data
@@ -516,4 +522,4 @@ class Record():
                     self.match_map["".join(str(match.match_name).split())] = rows - 1
                 cnt = cnt + 1
 
-        self.save_workbook(filename, workbook)
+        # self.save_workbook(filename, workbook)
