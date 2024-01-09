@@ -109,10 +109,10 @@ def ScrapeData():
     url = "https://www.m8clicks.com"
     early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd="
     # early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd="
-    # "ot=e&ov=1&isWC=False&ia=0&isSiteFav=False"
-    early_url2 = "&isWC=False&ia=0&tf=-1"
-    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1&isSiteFav=False"
-    # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=False&ia=0&isSiteFav=False"
+    # "ot=e&ov=1&isWC=0&ia=0&isSiteFav=False"
+    early_url2 = "&isWC=0&ia=0&tf=-1"
+    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=0&ia=0&tf=-1&isSiteFav=False"
+    # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=0&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
     chromeOptions.add_argument('--headless')
