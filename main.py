@@ -175,10 +175,10 @@ def ScrapeData():
     url = "https://www.m8clicks.com"
     early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?ot=e&ov=1&mt=0&wd="
     # early_url1 = "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd="
-    # "ot=e&ov=1&isWC=False&ia=0&isSiteFav=False"
-    early_url2 = "&isWC=False&ia=0&tf=-1"
-    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=False&ia=0&tf=-1&isSiteFav=False"
-    # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=False&ia=0&isSiteFav=False"
+    # "ot=e&ov=1&isWC=0&ia=0&isSiteFav=False"
+    early_url2 = "&isWC=0&ia=0&tf=-1"
+    today_url = "https://m8clicks.com/_View/RMOdds2.aspx?ot=t&ov=1&mt=0&wd=&isWC=0&ia=0&tf=-1&isSiteFav=False"
+    # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=0&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
     # chromeOptions.add_argument('--headless')
@@ -208,148 +208,148 @@ def ScrapeData():
 
     print(current_date)
     print(passed_minutes)
-    # # First Login
+    # First Login
 
-    # # if not os.path.exists("cookies.pkl"):
-    # driver.get(url)
-    # time.sleep(3)
+    # if not os.path.exists("cookies.pkl"):
+    driver.get(url)
+    time.sleep(3)
     
-    # try:
+    try:
 
-    #     username_filed = driver.find_element('id', 'txtUserName')
-    #     password_filed = driver.find_element('id', 'txtPassword')
+        username_filed = driver.find_element('id', 'txtUserName')
+        password_filed = driver.find_element('id', 'txtPassword')
 
-    #     username_filed.send_keys(UserName)
-    #     password_filed.send_keys(PassWord)
+        username_filed.send_keys(UserName)
+        password_filed.send_keys(PassWord)
         
-    #     password_filed.send_keys(Keys.RETURN)
+        password_filed.send_keys(Keys.RETURN)
     
-    # except NoSuchElementException:
+    except NoSuchElementException:
         
-    #     driver.close() # closing the webdriver 
-    #     print("The website is not available now!")
-    #     print("Please try again later...")
+        driver.close() # closing the webdriver 
+        print("The website is not available now!")
+        print("Please try again later...")
         
-    #     end_time = time.time()
+        end_time = time.time()
 
-    #     return (end_time - start_time, passed_minutes)
+        return (end_time - start_time, passed_minutes)
 
-    # time.sleep(2)
+    time.sleep(2)
 
-    # # After logging in
-    # cookies = driver.get_cookies()
+    # After logging in
+    cookies = driver.get_cookies()
 
-    # # Store the cookies
-    # cookie_dict = {}
-    # for cookie in cookies:
-    #     cookie_dict[cookie['name']] = cookie['value']
+    # Store the cookies
+    cookie_dict = {}
+    for cookie in cookies:
+        cookie_dict[cookie['name']] = cookie['value']
 
-    # time.sleep(5)
+    time.sleep(5)
 
-    # while url == driver.current_url:
-    #     time.sleep(1)
+    while url == driver.current_url:
+        time.sleep(1)
 
-    # print(driver.current_url)
+    print(driver.current_url)
 
-    # current_url = driver.current_url
+    current_url = driver.current_url
 
-    # current_url = re.sub(r"lang=[A-Z]{2}-[A-Z]{2}", "lang=EN-US", current_url)
+    current_url = re.sub(r"lang=[A-Z]{2}-[A-Z]{2}", "lang=EN-US", current_url)
     
-    # driver.get(current_url)
-    # time.sleep(2)
+    driver.get(current_url)
+    time.sleep(2)
 
-    # # Today Recording
+    # Today Recording
 
-    # try:
-    #     driver.get(today_url)
+    try:
+        driver.get(today_url)
 
-    #     # Add the stored cookies to the WebDriver
-    #     for name, value in cookie_dict.items():
-    #         driver.add_cookie({'name': name, 'value': value})
+        # Add the stored cookies to the WebDriver
+        for name, value in cookie_dict.items():
+            driver.add_cookie({'name': name, 'value': value})
 
-    #     driver.refresh()
+        driver.refresh()
 
-    # except Exception as e:
-    #     print("Error: " + str(e))
+    except Exception as e:
+        print("Error: " + str(e))
     
     
-    # # this is just to ensure that the page is loaded 
-    # time.sleep(5) 
+    # this is just to ensure that the page is loaded 
+    time.sleep(5) 
     
-    # driver.execute_script("return document.readyState")
+    driver.execute_script("return document.readyState")
 
     
-    # time.sleep(2)
+    time.sleep(2)
 
-    # html = driver.page_source 
-    # # print(html)
+    html = driver.page_source 
+    # print(html)
 
-    # filename = "record.xlsx"
+    filename = "record.xlsx"
 
-    # analyzer = Analyzer(html, True, current_date, passed_minutes)
-    # leagues = analyzer.get_data()
+    analyzer = Analyzer(html, True, current_date, passed_minutes)
+    leagues = analyzer.get_data()
     
-    # if not os.path.exists(filename):
-    #     workbook = Workbook()
-    #     save_workbook(filename, workbook)
+    if not os.path.exists(filename):
+        workbook = Workbook()
+        save_workbook(filename, workbook)
 
-    # time_a = time.time()
-    # workbook = load_workbook(filename)
-    # time_b = time.time()
-    # print("Loading Excel costs " + str(time_b - time_a) + " seconds")
+    time_a = time.time()
+    workbook = load_workbook(filename)
+    time_b = time.time()
+    print("Loading Excel costs " + str(time_b - time_a) + " seconds")
 
-    # save_to_single_file(workbook, current_date)
+    save_to_single_file(workbook, current_date)
 
-    # if len(leagues) != 0:
-    #     record = Record(current_date, passed_minutes)
-    #     record.set_data(leagues)
-    #     record.create_file_sheet(filename, workbook)
+    if len(leagues) != 0:
+        record = Record(current_date, passed_minutes)
+        record.set_data(leagues)
+        record.create_file_sheet(filename, workbook)
 
-    # # Early Recording
+    # Early Recording
 
-    # k = 0
+    k = 0
     
-    # for i in range(6):
-    #     early_date_format = change_date_format(current_date, i, "%m/%d/%Y", "%Y-%m-%d")
-    #     early_url = early_url1 + early_date_format + early_url2
+    for i in range(6):
+        early_date_format = change_date_format(current_date, i, "%m/%d/%Y", "%Y-%m-%d")
+        early_url = early_url1 + early_date_format + early_url2
 
-    #     try:
-    #         driver.get(early_url)
+        try:
+            driver.get(early_url)
 
-    #         # Add the stored cookies to the WebDriver
-    #         for name, value in cookie_dict.items():
-    #             driver.add_cookie({'name': name, 'value': value})
+            # Add the stored cookies to the WebDriver
+            for name, value in cookie_dict.items():
+                driver.add_cookie({'name': name, 'value': value})
 
-    #         driver.refresh()
+            driver.refresh()
 
-    #     except Exception as e:
-    #         print("Error: " + str(e))
+        except Exception as e:
+            print("Error: " + str(e))
 
-    #     # this is just to ensure that the page is loaded 
-    #     time.sleep(10) 
+        # this is just to ensure that the page is loaded 
+        time.sleep(10) 
 
-    #     html = driver.page_source 
-    #     # print(html)
+        html = driver.page_source 
+        # print(html)
         
-    #     driver.execute_script("return document.readyState")
+        driver.execute_script("return document.readyState")
 
-    #     time.sleep(2)
+        time.sleep(2)
 
-    #     analyzer = Analyzer(html, False, current_date, passed_minutes)
-    #     leagues = analyzer.get_data()
+        analyzer = Analyzer(html, False, current_date, passed_minutes)
+        leagues = analyzer.get_data()
 
-    #     if len(leagues) != 0:
-    #         record = Record(current_date, passed_minutes)
-    #         record.set_data(leagues)
-    #         record.create_file_sheet(filename, workbook)
-    #         k = k + 1
-    #     if k == 5: break
+        if len(leagues) != 0:
+            record = Record(current_date, passed_minutes)
+            record.set_data(leagues)
+            record.create_file_sheet(filename, workbook)
+            k = k + 1
+        if k == 5: break
 
 
-    # save_workbook(filename, workbook)
+    save_workbook(filename, workbook)
     
-    # print("URL")
-    # print(driver.current_url)
+    print("URL")
+    print(driver.current_url)
 
     # result match
     # check if there already exists result file.
@@ -515,6 +515,12 @@ def recordResult():
     # chromeOptions.add_argument('--headless')
     chromeOptions.add_argument('--allow-running-insecure-content')
     chromeOptions.add_argument('--ignore-certificate-errors')
+
+    chromeOptions.add_argument("enable-automation")
+    chromeOptions.add_argument("--no-sandbox")
+    chromeOptions.add_argument("--disable-extensions")
+    chromeOptions.add_argument("--dns-prefetch-disable")
+    chromeOptions.add_argument("--disable-gpu")
 
     # instantiate a webdriver
     driver = webdriver.Chrome(options = chromeOptions)
