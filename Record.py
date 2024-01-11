@@ -4,7 +4,7 @@ from openpyxl.utils import cell as celll
 from openpyxl.styles import PatternFill, Alignment, Font, Border, Side
 from datetime import datetime, timedelta
 from openpyxl.formatting.rule import Rule
-import copy
+import shutil
 
 # import xlsxwriter
 
@@ -310,7 +310,7 @@ class Record():
     def formatting_sheet_first_time(self, worksheet):
         # Formatting Worksheet For the First Time
 
-        # merge sell
+        # merge cell
         start_cell = 'A1'
         end_cell = 'E2'
 
@@ -432,39 +432,6 @@ class Record():
 
         # if save_flag:
         #     self.save_workbook(filename, workbook)
-
-        # save to single files and remove from main file
-        
-        # workbook = load_workbook(filename)
-        sheetnames = workbook.sheetnames
-
-        print("SheetNames")
-        print(sheetnames)
-        print("DateNames")
-        print(date_names)
-
-        save_flag = True
-
-        for sheetname in sheetnames:
-            if sheetname in date_names:
-                continue
-            else:
-                save_flag = False
-                workbook1 = copy.deepcopy(workbook)
-                workbook.remove_sheet(workbook.get_sheet_by_name(sheetname))
-
-                sheets = workbook.sheetnames # ['Sheet1', 'Sheet2']
-
-                for s in sheets:
-                    if s != sheetname:
-                        sheet_name = workbook1.get_sheet_by_name(s)
-                        workbook1.remove_sheet(sheet_name)
-                self.save_workbook(sheetname + ".xlsx", workbook1)
-
-        # if save_flag == False: self.save_workbook("record.xlsx", workbook)
-
-        print("SheetNames")
-        print(workbook.sheetnames)
 
         # get data for processing
         leagues = self.data
