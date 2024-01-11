@@ -23,8 +23,8 @@ class MatchResult():
         self.score1 = 0
         self.score2 = 0
 
-UserName = 'nextaa'
-PassWord = 'Qwer1234'
+UserName = 'nextii'
+PassWord = 'Asdf1234'
 
 def check_file_writable(file_path):
     if not os.path.exists(file_path):
@@ -181,9 +181,15 @@ def ScrapeData():
     # "https://m8clicks.com/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=False&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
-    chromeOptions.add_argument('--headless')
+    # chromeOptions.add_argument('--headless')
     chromeOptions.add_argument('--allow-running-insecure-content')
     chromeOptions.add_argument('--ignore-certificate-errors')
+    
+    chromeOptions.add_argument("enable-automation")
+    chromeOptions.add_argument("--no-sandbox")
+    chromeOptions.add_argument("--disable-extensions")
+    chromeOptions.add_argument("--dns-prefetch-disable")
+    chromeOptions.add_argument("--disable-gpu")
 
     # instantiate a webdriver
     driver = webdriver.Chrome(options = chromeOptions)
