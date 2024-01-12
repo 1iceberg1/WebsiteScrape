@@ -413,7 +413,6 @@ def ScrapeData():
                         result_map[match_name.lower()] = str(result.score1) + "-" + str(result.score2)
                     print("ok1")
                     for i in range(rows):
-                        print("for i " + str(i))
                         idx = row_base + i * 24
                         cell = worksheet.cell(column = 2, row = idx)
                         cell_str = "".join(str(cell.value).split())
@@ -435,7 +434,6 @@ def ScrapeData():
                             start_col = -1
                             end_col = -1
                             for j in range(4):
-                                print("for j " + str(j))
                                 idx = row_base + i * 24 + ii * 12 + j * 3
                                 (start_col, end_col) = getRange(worksheet, idx, start_range, end_range)
                                 print("Start Col " + str(start_col))
