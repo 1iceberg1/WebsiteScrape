@@ -208,6 +208,7 @@ def ScrapeData():
 
     print(current_date)
     print(passed_minutes)
+    
     # First Login
 
     # if not os.path.exists("cookies.pkl"):
@@ -353,7 +354,7 @@ def ScrapeData():
 
     # result match
     # check if there already exists result file.
-    if passed_minutes > 150:
+    if passed_minutes > 120:
         previous_date = change_date_format(current_date, -1, "%m/%d/%Y", "%d %b %Y")
         recordedFileName = previous_date.replace(" ", "_")
 
@@ -422,11 +423,20 @@ def ScrapeData():
                         else: continue
                         score_str = result_map[cell_str.lower()]
                         print("Score " + score_str)
-                        worksheet.cell(row = idx, column = 5).value = score_str
-                        worksheet.cell(row = idx + 12, column = 5).value = score_str
 
                         score1 = float(score_str.split('-')[0])
                         score2 = float(score_str.split('-')[1])
+
+                        isRefunded = 0
+                        if score1 == 10000: isRefunded = 1
+
+                        if isRefunded:
+                            worksheet.cell(row = idx, column = 5).value = "Refunded"
+                            worksheet.cell(row = idx + 12, column = 5).value = "Refunded"
+                            continue
+                        else:
+                            worksheet.cell(row = idx, column = 5).value = score_str
+                            worksheet.cell(row = idx + 12, column = 5).value = score_str
 
                         for ii in range(2):
                             start_range = col_base
@@ -436,23 +446,28 @@ def ScrapeData():
                             for j in range(4):
                                 idx = row_base + i * 24 + ii * 12 + j * 3
                                 (start_col, end_col) = getRange(worksheet, idx, start_range, end_range)
-                                print("Start Col " + str(start_col))
-                                print("End Col " + str(end_col))
+                                # print("Start Col " + str(start_col))
+                                # print("End Col " + str(end_col))
                                 if start_col == -1 or end_col == -1: break
                                 start_range = start_col
                                 end_range = end_col
                                 cell = worksheet.cell(row = idx + 1, column = end_col)
                                 cell_str = "".join(str(cell.value).split())
-                                print("Cell Str " + cell_str)
-                                print("Splitted " + cell_str.split("/")[0])
+                                # print("Cell Str " + cell_str)
+                                # print("Splitted " + cell_str.split("/")[0])
                                 bet_result = float(cell_str.split("/")[0])
                                 if len(cell_str.split("/")) == 2:
                                     if bet_result < 0: bet_result = bet_result - 0.25
                                     else: bet_result = bet_result + 0.25
+
                                 res = 1
-                                if score1 > score2 + bet_result: res = 0
-                                elif score1 < score2 + bet_result: res = 2
-                                if res == 1: continue
+                                if ii:
+                                    if score1 + score2 > bet_result: res = 0
+                                    elif score1 + score2 < bet_result: res = 2
+                                else:
+                                    if score1 > score2 + bet_result: res = 0
+                                    elif score1 < score2 + bet_result: res = 2
+                                # if res == 1: continue
                                 markResultRow(worksheet, idx + res, start_col, end_col)
                 except Exception as e:
                     print(e)
@@ -578,8 +593,9 @@ def recordResult(date_str):
                 if isValidLeague == False: continue
                 if "".join(str(tr_tag.td.next_sibling.next_sibling.next_sibling.next_sibling.text).replace('\n', '')) != "Completed": continue
                 
-                if date_str in "".join(str(tr_tag.td.text).replace('\n', '').split()) : pass
-                else: continue
+                # # if date is valid
+                # if date_str in "".join(str(tr_tag.td.text).replace('\n', '').split()) : pass
+                # else: continue
                 
                 print("".join(str(tr_tag.td.next_sibling.next_sibling.next_sibling.next_sibling.text).replace('\n', '')) + ":")
                 string = tr_tag.td.next_sibling.text
@@ -589,11 +605,16 @@ def recordResult(date_str):
                 second_team = string_list[1]
                 print(first_team + ": VS :" + second_team)
                 string = tr_tag.td.next_sibling.next_sibling.next_sibling.text
-                if '-' not in string: continue
-                string = " ".join(string.split())
-                string_list = string.split("-")
-                first_value = string_list[0]
-                second_value = string_list[1]
+                isRefunded = 0
+                if "Refund" in string: isRefunded = 1
+                elif '-' not in string: continue
+                first_value = 10000
+                second_value = 10000
+                if not isRefunded: 
+                    string = " ".join(string.split())
+                    string_list = string.split("-")
+                    first_value = string_list[0]
+                    second_value = string_list[1]
                 print(str(first_value) + ": VS :" + str(second_value))
                 result = MatchResult()
                 result.team1 = first_team
