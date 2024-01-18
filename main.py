@@ -451,24 +451,8 @@ def ScrapeData():
                                 if start_col == -1 or end_col == -1: break
                                 start_range = start_col
                                 end_range = end_col
-                                cell = worksheet.cell(row = idx + 1, column = end_col)
-                                cell_str = "".join(str(cell.value).split())
-                                # print("Cell Str " + cell_str)
-                                # print("Splitted " + cell_str.split("/")[0])
-                                bet_result = float(cell_str.split("/")[0])
-                                if len(cell_str.split("/")) == 2:
-                                    if bet_result < 0: bet_result = bet_result - 0.25
-                                    else: bet_result = bet_result + 0.25
-
-                                res = 1
-                                if ii:
-                                    if score1 + score2 > bet_result: res = 0
-                                    elif score1 + score2 < bet_result: res = 2
-                                else:
-                                    if score1 > score2 + bet_result: res = 0
-                                    elif score1 < score2 + bet_result: res = 2
-                                # if res == 1: continue
-                                markResultRow(worksheet, idx + res, start_col, end_col)
+                                
+                                markResultRow(worksheet, idx, score1, score2, start_col, end_col, ii)
                 except Exception as e:
                     print(e)
                     is_bug = True
@@ -486,9 +470,29 @@ def ScrapeData():
 
 # ScrapeData()
 
-def markResultRow(worksheet, idx, start_col, end_col):
+def markResultRow(worksheet, idx, score1, score2, start_col, end_col, ii):
     for i in range (start_col, end_col + 1):
-        cell = worksheet.cell(row = idx, column = i)
+        cell = worksheet.cell(row = idx + 1, column = i)
+        cell_str = "".join(str(cell.value).split())
+        # print("Cell Str " + cell_str)
+        # print("Splitted " + cell_str.split("/")[0])
+        if cell_str == "": continue
+        
+        bet_result = float(cell_str.split("/")[0])
+        if len(cell_str.split("/")) == 2:
+            if bet_result < 0: bet_result = bet_result - 0.25
+            else: bet_result = bet_result + 0.25
+
+        res = 1
+        if ii:
+            if score1 + score2 > bet_result: res = 0
+            elif score1 + score2 < bet_result: res = 2
+        else:
+            if score1 > score2 + bet_result: res = 0
+            elif score1 < score2 + bet_result: res = 2
+        # if res == 1: continue
+            
+        cell = worksheet.cell(row = idx + res, column = i)
         cell.fill = PatternFill(start_color="FECF81", end_color="FECF81", fill_type="solid")
 
 def getRange(worksheet, idx, start_range, end_range):
