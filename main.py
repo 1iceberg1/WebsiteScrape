@@ -407,7 +407,7 @@ def ScrapeData():
                         cell.fill = PatternFill(start_color="E2EFDA", end_color="E2EFDA", fill_type="solid")
                         
                     date_str = change_date_format(current_date, -1, "%m/%d/%Y", "%b%d%Y")
-                    results = recordResult(date_str)
+                    results = recordResult(date_str, passed_minutes)
                     result_map = {}
                     for result in results:
                         match_name = "".join(result.team1.split()) + "vs" + "".join(result.team2.split())
@@ -422,7 +422,7 @@ def ScrapeData():
                             pass
                         else: continue
                         score_str = result_map[cell_str.lower()]
-                        print("Score " + score_str)
+                        # print("Score " + score_str)
 
                         score1 = float(score_str.split('-')[0])
                         score2 = float(score_str.split('-')[1])
@@ -451,24 +451,8 @@ def ScrapeData():
                                 if start_col == -1 or end_col == -1: break
                                 start_range = start_col
                                 end_range = end_col
-                                cell = worksheet.cell(row = idx + 1, column = end_col)
-                                cell_str = "".join(str(cell.value).split())
-                                # print("Cell Str " + cell_str)
-                                # print("Splitted " + cell_str.split("/")[0])
-                                bet_result = float(cell_str.split("/")[0])
-                                if len(cell_str.split("/")) == 2:
-                                    if bet_result < 0: bet_result = bet_result - 0.25
-                                    else: bet_result = bet_result + 0.25
-
-                                res = 1
-                                if ii:
-                                    if score1 + score2 > bet_result: res = 0
-                                    elif score1 + score2 < bet_result: res = 2
-                                else:
-                                    if score1 > score2 + bet_result: res = 0
-                                    elif score1 < score2 + bet_result: res = 2
-                                # if res == 1: continue
-                                markResultRow(worksheet, idx + res, start_col, end_col)
+                                
+                                markResultRow(worksheet, idx, score1, score2, start_col, end_col, ii)
                 except Exception as e:
                     print(e)
                     is_bug = True
@@ -486,9 +470,31 @@ def ScrapeData():
 
 # ScrapeData()
 
-def markResultRow(worksheet, idx, start_col, end_col):
+def markResultRow(worksheet, idx, score1, score2, start_col, end_col, ii):
     for i in range (start_col, end_col + 1):
-        cell = worksheet.cell(row = idx, column = i)
+        cell = worksheet.cell(row = idx + 1, column = i)
+        cell_str = "".join(str(cell.value).split())
+        # print("Cell Str " + cell_str)
+        # print("Splitted " + cell_str.split("/")[0])
+        if cell_str == "": continue
+        if cell_str == "None": continue
+
+        # print(cell_str)
+        bet_result = float(cell_str.split("/")[0])
+        if len(cell_str.split("/")) == 2:
+            if bet_result < 0: bet_result = bet_result - 0.25
+            else: bet_result = bet_result + 0.25
+
+        res = 1
+        if ii:
+            if score1 + score2 > bet_result: res = 0
+            elif score1 + score2 < bet_result: res = 2
+        else:
+            if score1 > score2 + bet_result: res = 0
+            elif score1 < score2 + bet_result: res = 2
+        # if res == 1: continue
+            
+        cell = worksheet.cell(row = idx + res, column = i)
         cell.fill = PatternFill(start_color="FECF81", end_color="FECF81", fill_type="solid")
 
 def getRange(worksheet, idx, start_range, end_range):
@@ -522,7 +528,7 @@ def getRange(worksheet, idx, start_range, end_range):
     return (start_col, end_col)
 
 
-def recordResult(date_str):
+def recordResult(date_str, passed_minutes):
     url = "https://m8clicks.com/_View/Result.aspx"
 
     chromeOptions = webdriver.ChromeOptions()
@@ -545,6 +551,11 @@ def recordResult(date_str):
 
     for i in range (2):
         if i == 1:
+            lstDates = driver.find_element(By.NAME, "lstDates")
+            lstDates.click()
+            lstDates.send_keys(Keys.DOWN, Keys.ENTER)
+
+        if passed_minutes > 700:
             lstDates = driver.find_element(By.NAME, "lstDates")
             lstDates.click()
             lstDates.send_keys(Keys.DOWN, Keys.ENTER)
@@ -584,6 +595,9 @@ def recordResult(date_str):
                     isValidLeague = False
                     continue
                 elif "TOTAL" in tr_tag.td.span.text:
+                    isValidLeague = False
+                    continue
+                elif "-" in tr_tag.td.span.text:
                     isValidLeague = False
                     continue
                 else:
