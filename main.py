@@ -483,7 +483,10 @@ def markResultRow(worksheet, idx, score1, score2, start_col, end_col, ii):
         bet_result = float(cell_str.split("/")[0])
         if len(cell_str.split("/")) == 2:
             if bet_result < 0: bet_result = bet_result - 0.25
-            else: bet_result = bet_result + 0.25
+            elif bet_result > 0: bet_result = bet_result + 0.25
+            else:
+                if cell_str[0] == '-': bet_result = -0.25
+                else: bet_result = 0.25
 
         res = 1
         if ii:
