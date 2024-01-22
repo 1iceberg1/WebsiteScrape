@@ -45,7 +45,7 @@ class Record():
             cell = worksheet.cell(column = 2, row = idx)
             # print(str(cell.value))
             if "".join(str(cell.value).split()) == "": break
-            self.match_map["".join(str(cell.value).split())] = i
+            self.match_map["".join(str(cell.value).split()).lower()] = i
     
     def set_data(self, leagues):
         self.data = leagues
@@ -77,8 +77,8 @@ class Record():
         rows = (int(worksheet.max_row) - 3) // 24
         if rows < 0: rows = 0
         i = 0
-        if "".join(str(match.match_name).split()) in self.match_map:
-            i = self.match_map["".join(str(match.match_name).split())]
+        if "".join(str(match.match_name).split()).lower() in self.match_map:
+            i = self.match_map["".join(str(match.match_name).split()).lower()]
             idx = base + i * 24
             if "".join(str(worksheet.cell(row = idx, column = 1).value).split()) == "".join(str(league_name).split()):
                 if "".join(str(worksheet.cell(row = idx, column = 4).value).split()) == "".join(str(match.time).split()):
@@ -486,7 +486,7 @@ class Record():
                 if f == 0: self.set_match_map(worksheet)
                 if f == 2:
                     rows = (int(worksheet.max_row) - 3) // 24
-                    self.match_map["".join(str(match.match_name).split())] = rows - 1
+                    self.match_map["".join(str(match.match_name).split()).lower()] = rows - 1
                 cnt = cnt + 1
 
         # self.save_workbook(filename, workbook)
