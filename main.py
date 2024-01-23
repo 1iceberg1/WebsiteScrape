@@ -600,7 +600,7 @@ def recordResult(date_str, passed_minutes):
                 elif "TOTAL" in tr_tag.td.span.text:
                     isValidLeague = False
                     continue
-                elif "-" in tr_tag.td.span.text:
+                elif " - " in tr_tag.td.span.text:
                     isValidLeague = False
                     continue
                 else:

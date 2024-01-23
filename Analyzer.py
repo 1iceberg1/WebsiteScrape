@@ -112,7 +112,7 @@ class Analyzer():
             if "WHICH" in league_name:
                 continue
             
-            if "-" in league_name:
+            if " - " in league_name:
                 continue
             
             tr_tag = football_table.tr
