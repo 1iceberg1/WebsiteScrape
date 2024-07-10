@@ -155,10 +155,14 @@ class Analyzer():
 
                     if "/" in time_value:
                         date = time_value[:5]
-                        input_format = "%d/%m"
+                        input_format = "%Y/%d/%m"
                         output_format = "%m/%d"
 
-                        date_obj = datetime.datetime.strptime(date, input_format)
+                        print(date)
+                        print(input_format)
+                        print(self.current_date[6:] + "/" + date)
+
+                        date_obj = datetime.datetime.strptime(self.current_date[6:] + "/" + date, input_format)
                         date = date_obj.strftime(output_format)
                         days = self.calculate_days_between_dates(self.current_date[:5], date)
                         year = datetime.date.today().year
@@ -267,11 +271,11 @@ class Analyzer():
 
     def calculate_days_between_dates(self, date_str1, date_str2):
         # Define the input date format
-        input_format = "%m/%d"
+        input_format = "%Y/%m/%d"
 
         # Convert the date strings to datetime objects
-        date_obj1 = datetime.datetime.strptime(date_str1, input_format)
-        date_obj2 = datetime.datetime.strptime(date_str2, input_format)
+        date_obj1 = datetime.datetime.strptime(self.current_date[6:] + '/' + date_str1, input_format)
+        date_obj2 = datetime.datetime.strptime(self.current_date[6:] + '/' + date_str2, input_format)
 
         # Calculate the difference between the two dates
         diff = date_obj2 - date_obj1
