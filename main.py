@@ -3,6 +3,7 @@ from openpyxl.utils import exceptions
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import WebDriverException
 from bs4 import BeautifulSoup
 import time
 import sched
@@ -23,8 +24,8 @@ class MatchResult():
         self.score1 = 0
         self.score2 = 0
 
-UserName = 'nextaa'
-PassWord = 'Qwer4321'
+UserName = 'myapskt1'
+PassWord = 'Asdf1234'
 
 def check_file_writable(file_path):
     if not os.path.exists(file_path):
@@ -48,31 +49,33 @@ def change_date_format(date_str, day_diff, input_format, output_format):
 def get_date_value(page):
     soup = BeautifulSoup(page, 'html.parser')
 
-    date_value = str(soup.find('span', {'id' : 'timecontainer'}).text)
-    date_value = "".join(date_value.split())
+    if soup.find('span', {'id' : 'timecontainer'}):
+        date_value = str(soup.find('span', {'id' : 'timecontainer'}).text)
+        date_value = "".join(date_value.split())
 
-    date_value = date_value[:-5]
-    if len(date_value) == 18:
-        if date_value[1].isdigit():
-            if date_value[9] == '0':
-                date_value = date_value[:9] + "12" + date_value[10:]
+        date_value = date_value[:-5]
+        if len(date_value) == 18:
+            if date_value[1].isdigit():
+                if date_value[9] == '0':
+                    date_value = date_value[:9] + "12" + date_value[10:]
+                else:
+                    date_value = date_value[:9] + "0" + date_value[9:]
             else:
-                date_value = date_value[:9] + "0" + date_value[9:]
-        else:
-            date_value = "0" + date_value
-    elif len(date_value) == 17:
-        if date_value[8] =='0':
-            date_value = "0" + date_value[:8] + "12" + date_value[9:]
-        else:
-            date_value = "0" + date_value[:8] + "0" + date_value[8:]
+                date_value = "0" + date_value
+        elif len(date_value) == 17:
+            if date_value[8] =='0':
+                date_value = "0" + date_value[:8] + "12" + date_value[9:]
+            else:
+                date_value = "0" + date_value[:8] + "0" + date_value[8:]
 
-    input_format = "%d%b%Y%I:%M:%S%p"
-    output_format = "%m/%d/%Y, %I:%M:%S%p"
+        input_format = "%d%b%Y%I:%M:%S%p"
+        output_format = "%m/%d/%Y, %I:%M:%S%p"
 
-    date_obj = datetime.datetime.strptime(date_value, input_format)
-    formatted_date_str = date_obj.strftime(output_format)
-    
-    return formatted_date_str
+        date_obj = datetime.datetime.strptime(date_value, input_format)
+        formatted_date_str = date_obj.strftime(output_format)
+        
+        return formatted_date_str
+    return ''
 
 def save_workbook(filename, workbook):
     success_flag = True
@@ -181,7 +184,7 @@ def ScrapeData():
     # "https://m8huaythai.net/_View/RMOdds2.aspx?update=false&r=316466324&wd=2023-10-31&ot=e&isWC=0&ia=0&isSiteFav=False"
 
     chromeOptions = webdriver.ChromeOptions()
-    chromeOptions.add_argument('--headless')
+    # chromeOptions.add_argument('--headless')
     chromeOptions.add_argument('--allow-running-insecure-content')
     chromeOptions.add_argument('--ignore-certificate-errors')
     
@@ -203,6 +206,20 @@ def ScrapeData():
     date_html = driver.page_source
     # print(date_html)
     current_date_time = get_date_value(date_html)
+
+    now = datetime.datetime.now()
+    passed_minutes = now.hour * 60 + now.minute
+    
+    if current_date_time == '':
+        end_time = time.time()
+        driver.close() # closing the webdriver 
+        print("The website is not available now!")
+        print("Please try again later...")
+        
+        end_time = time.time()
+
+        return (end_time - start_time, passed_minutes)
+
     passed_minutes = calculate_passed_minutes(current_date_time[-10:])
     current_date = current_date_time[:10]
 
@@ -610,6 +627,9 @@ def recordResult(date_str, passed_minutes):
                 elif "TOTAL" in tr_tag.td.span.text:
                     isValidLeague = False
                     continue
+                elif "FANTASY" in tr_tag.td.span.text:
+                    isValidLeague = False
+                    continue
                 elif " - " in tr_tag.td.span.text:
                     isValidLeague = False
                     continue
@@ -655,16 +675,21 @@ def recordResult(date_str, passed_minutes):
 
 def call_function(scheduler):
 
-    runtime, record_time = ScrapeData()
-    print("RECORD TIME: " + str(record_time))
-    print("Runtime: " + str(runtime))
-    # Calculate
-    current_seconds = record_time * 60 + int(runtime) + 1 + 300
-    next_time = current_seconds // 1800 + 1
-    after = 1800 * next_time - current_seconds
-    if after < 0: after = 0
-    print("Record after " + str(after) + " seconds again")
-    scheduler.enter(after, 1, call_function, (scheduler,))
+    try:
+        runtime, record_time = ScrapeData()
+        print("RECORD TIME: " + str(record_time))
+        print("Runtime: " + str(runtime))
+        # Calculate
+        current_seconds = record_time * 60 + int(runtime) + 1 + 300
+        next_time = current_seconds // 1800 + 1
+        after = 1800 * next_time - current_seconds
+        if after < 0: after = 0
+        print("Record after " + str(after) + " seconds again")
+        scheduler.enter(after, 1, call_function, (scheduler,))
+    except WebDriverException as e:
+        print("WebDriveException Error", e)
+        print("Retry after 60 seconds again")
+        scheduler.enter(60, 1, call_function, (scheduler,))
 
 my_scheduler = sched.scheduler(time.time, time.sleep)
 my_scheduler.enter(1, 1, call_function, (my_scheduler,))
